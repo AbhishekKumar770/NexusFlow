@@ -1,4 +1,4 @@
-# NexusFlow — Screen Specifications
+# NexusFlow — **Scope of This Version:** Registration, Login, Password Recovery, and Business Setup Wizard
 
 ## 1. Document Purpose
 
