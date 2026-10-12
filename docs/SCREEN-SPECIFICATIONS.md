@@ -1,4 +1,4 @@
-# NexusFlow — **Scope of This Version:** Registration, Login, Password Recovery, and Business Setup Wizard
+# NexusFlow — Screen Specifications
 
 ## 1. Document Purpose
 
@@ -8,7 +8,7 @@ The specifications will guide future UI/UX design, database design, API developm
 
 **Project Status:** Planning  
 **Initial Approach:** Cloud-first, multi-tenant business platform  
-**Scope of This Version:** Registration and Login screens
+**Scope of This Version:** Registration, Login, Password Recovery, and Business Setup Wizard
 
 ---
 
