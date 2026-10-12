@@ -7,7 +7,7 @@ This document defines the planned modules, submodules, screens, forms, user role
 It provides a structured overview of the product before detailed UI design, database design, API development, and implementation begin.
 
 **Project Status:** Planning  
-**Product Approach:** Cloud-first, multi-tenant business management platform  
+**Product Approach:** Online-first, multi-tenant business management platform  
 **Initial Architecture:** Modular Monolith  
 **Future Architecture:** Evaluate distributed services when justified by business and technical requirements
 
@@ -41,7 +41,7 @@ Priorities describe the intended delivery order, not implementation status.
 | Role Management | Define user roles | P0 |
 | Permission Management | Control access to modules and actions | P0 |
 | Company Settings | Configure company details and preferences | P0 |
-| Branch Management | Manage business branches | P1 |
+| Branch Management | Manage business branches and enforce configured branch-level access | P0 |
 | Subscription Management | Manage plans, limits, and billing | P2 |
 | Tenant Administration | Support platform-level administration | P2 |
 
@@ -76,8 +76,8 @@ Authentication, tenant identification, authorization, and tenant data isolation.
 | Supplier List | Search and manage suppliers | P0 |
 | Supplier Create / Edit | Maintain supplier information | P0 |
 | Warehouse Management | Configure stock locations | P0 |
-| Tax Configuration | Define applicable tax settings | P1 |
-| Payment Method Setup | Configure supported payment methods | P1 |
+| Tax Configuration | Define tax settings required by MVP transactions | P0 |
+| Payment Method Setup | Configure payment methods used by MVP operational finance | P0 |
 
 ### Primary Roles
 
@@ -102,11 +102,11 @@ Tenant setup, authorization, and company configuration.
 | Stock Movement History | Review stock receipts, issues, and transfers | P0 |
 | Goods Receipt | Record received goods | P0 |
 | Stock Adjustment | Correct stock differences with reasons | P0 |
-| Stock Transfer | Move stock between warehouses | P1 |
+| Stock Transfer | Move stock between authorized warehouses | P0 |
 | Low Stock Report | Identify products below configured levels | P1 |
 | Stock Reservation View | Inspect quantities reserved for orders | P0 |
-| Stock Reconciliation | Compare physical and recorded stock | P1 |
-| Inventory Valuation | Review stock value using a defined costing policy | P1 |
+| Stock Reconciliation | Compare physical and recorded stock with controlled adjustments | P0 |
+| Inventory Valuation | Review stock value using the approved moving weighted-average costing policy | P0 |
 
 ### Primary Roles
 
@@ -137,11 +137,11 @@ Product master, warehouse setup, purchasing, sales orders, and stock movement ru
 | Purchase Order List | Search and review purchase orders | P0 |
 | Purchase Order Create / Edit | Create and maintain purchase orders | P0 |
 | Purchase Order Details | Review ordered products and quantities | P0 |
-| Purchase Approval | Approve orders when approval rules apply | P1 |
+| Purchase Approval | Approve orders when configured approval rules apply | P0 |
 | Goods Receipt | Record quantities physically received | P0 |
-| Supplier Invoice | Record supplier invoice details | P1 |
-| Purchase Return | Record goods returned to a supplier | P1 |
-| Supplier Payment | Record payments to suppliers | P1 |
+| Supplier Invoice | Record supplier invoice details and match against purchase order and goods receipt | P0 |
+| Purchase Return | Record controlled goods returns to a supplier | P0 |
+| Supplier Payment | Record supplier payments and allocations | P0 |
 | Purchase History | Review previous purchases | P1 |
 
 ### Primary Roles
@@ -156,13 +156,13 @@ Supplier master, product master, warehouse setup, inventory, and later finance.
 
 Create Purchase Order → Receive Goods → Update Stock → Record Supplier Invoice → Record Payable → Record Payment.
 
-The first MVP may implement only the basic purchasing and goods-receipt workflow. Invoice accounting and supplier payments can follow in later phases.
+The MVP includes purchase orders, approval where applicable, partial goods receipts, supplier invoices, purchase returns, supplier payables, and supplier payment workflows. Apply approved three-way-match and cost-difference rules; do not defer supplier payments and returns.
 
 ---
 
-## 7. Sales and Cloud POS
+## 7. Sales and Customer Orders (MVP)
 
-**Purpose:** Support customer orders, sales transactions, billing, and in-store checkout through a cloud-connected POS.
+**Purpose:** Support customer orders, stock reservation and fulfillment, sales invoicing, operational payments, returns, and refunds. Dedicated POS checkout is a future increment.
 
 ### Planned Screens and Forms
 
@@ -173,13 +173,13 @@ The first MVP may implement only the basic purchasing and goods-receipt workflow
 | Create Sales Order | Create a customer order | P0 |
 | Order Status | Track order processing | P0 |
 | Checkout | Confirm products, pricing, and totals | P1 |
-| POS Checkout | Process in-store sales | P1 |
-| Sales Invoice | Generate and view sales invoices | P1 |
-| Sales Payment | Record payments against sales | P1 |
-| Cashier Session | Track opening and closing cash balances | P1 |
-| Sales Return | Record returned goods | P1 |
-| Refund Management | Record refunds against eligible sales | P1 |
-| Discount Management | Apply authorized discounts | P1 |
+| POS Checkout | Dedicated in-store POS checkout | P2 |
+| Sales Invoice | Generate and view sales invoices | P0 |
+| Sales Payment | Record customer receipts and allocate payments against eligible balances | P0 |
+| Cashier Session | Dedicated POS cashier opening/closing workflow | P2 |
+| Sales Return | Record controlled sales returns and linked credit notes | P0 |
+| Refund Management | Record controlled refunds against eligible transactions | P0 |
+| Discount Management | Apply authorized discounts with server-side validation | P0 |
 | Sales History | Review completed transactions | P1 |
 
 ### Primary Roles
@@ -188,7 +188,7 @@ Sales User, Cashier, Manager, Finance User, Business Owner.
 
 ### Dependencies
 
-Product master, customer master, inventory availability, pricing, payment methods, and later accounting.
+Product/customer masters, inventory availability, pricing and tax rules, payment methods, authorization, and operational finance. Full general-ledger accounting is a future phase.
 
 ### Important Rules
 
@@ -232,28 +232,28 @@ Product catalog, inventory, sales orders, customer data, and integration infrast
 
 ---
 
-## 9. Accounting and Finance
+## 9. Operational Finance (MVP) and Full Accounting (Future Phase)
 
-**Purpose:** Provide reliable financial records and reports connected to purchasing, sales, payments, and returns.
+**Purpose:** Provide reliable operational balances, receipts/payments, cash and bank activity, controlled corrections, and operational period-end reporting. Full general-ledger accounting is not part of the MVP.
 
 ### Planned Screens and Forms
 
 | Screen / Form | Purpose | Priority |
 |---|---|---|
-| Chart of Accounts | Define financial accounts | P1 |
-| Journal Entry | Record balanced accounting entries | P1 |
-| General Ledger | Review account transactions | P1 |
-| Accounts Receivable | Track amounts owed by customers | P1 |
-| Accounts Payable | Track amounts owed to suppliers | P1 |
-| Customer Receipt | Record customer collections | P1 |
+| Chart of Accounts | Define general-ledger accounts | P2 |
+| Journal Entry | Record balanced general-ledger entries | P2 |
+| General Ledger | Review general-ledger transactions | P2 |
+| Accounts Receivable | Track customer receivables and outstanding balances | P0 |
+| Accounts Payable | Track supplier payables and outstanding balances | P0 |
+| Customer Receipt | Record customer receipts and allocate them against eligible balances | P0 |
 | Supplier Payment | Record supplier payments | P1 |
 | Expense Entry | Record business expenses | P1 |
-| Cash and Bank | Track cash and bank accounts | P1 |
-| Bank Reconciliation | Reconcile recorded and bank transactions | P2 |
-| Trial Balance | Review account balances | P1 |
-| Profit and Loss | Review income and expenses | P1 |
-| Balance Sheet | Review financial position | P1 |
-| Tax Reports | Produce reports according to configured tax rules | P2 |
+| Cash and Bank | Manage cash/bank accounts, transactions, transfers, and opening balances | P0 |
+| Manual Reconciliation | Manually reconcile eligible cash/bank transactions with controlled audit history | P0 |
+| Trial Balance | General-ledger trial balance | P2 |
+| Profit and Loss | Formal accounting statement based on general-ledger postings | P2 |
+| Balance Sheet | Formal accounting statement based on general-ledger postings | P2 |
+| Tax Reports | Produce applicable operational tax reports; statutory reporting needs separate requirements | P1 |
 
 ### Primary Roles
 
@@ -261,14 +261,16 @@ Finance User, Accountant, Manager, Business Owner.
 
 ### Dependencies
 
-Company financial settings, chart of accounts, sales, purchasing, payments, returns, and accounting posting rules.
+Company/branch settings, sales, purchasing, payments, returns, cash/bank transactions, financial-period controls, and authorization. General-ledger screens depend on a future chart of accounts and posting rules.
 
 ### Important Rules
 
-- Every posted journal entry must balance.
-- Posted financial transactions must have a controlled correction or reversal process.
-- Financial reports must use consistent accounting rules.
+- Operational financial transactions require controlled correction/reversal and an audit trail.
+- Payment allocations and account balances must be validated server-side.
+- Financial-period creation, extension, closing, and reopening must follow approved permissions and lifecycle rules.
+- Operational reports must not be presented as formal P&L, balance sheet, or general-ledger reports.
 - Tax treatment must be configurable for the applicable business jurisdiction.
+- General-ledger entries must balance when that future phase is implemented.
 
 ---
 
@@ -285,10 +287,10 @@ Company financial settings, chart of accounts, sales, purchasing, payments, retu
 | Purchase Reports | Review purchasing activity | P1 |
 | Sales Reports | Review sales performance | P1 |
 | Order Reports | Review order status and fulfilment | P0 |
-| Financial Reports | Review accounting results | P1 |
+| Operational Finance Reports | Review receivables, payables, payments, cash/bank activity, and period-end operational balances | P0 |
 | Audit Log | Review important user and system actions | P0 |
-| Background Job Status | Review asynchronous task execution | P2 |
-| Integration Monitoring | Inspect integration errors and retries | P2 |
+| Background Job Status | Review asynchronous task execution and job history | P0 |
+| Integration Monitoring | Inspect integration errors and retries when integrations are enabled | P1 |
 
 ### Primary Roles
 
@@ -308,12 +310,12 @@ Relevant business modules, authorization, and audit/event records.
 
 | Capability | Purpose | Priority |
 |---|---|---|
-| Background Job Foundation | Run non-blocking background work | P1 |
-| Notification History | Track generated notifications | P1 |
-| Email Notifications | Send configured business emails | P2 |
+| Background Job Foundation | Run approved asynchronous work with safe retries and job history | P0 |
+| Notification History | Track generated in-app notifications | P0 |
+| Email Notifications | Send configured business emails | P1 |
 | WhatsApp Integration | Support eligible messaging integrations | P2 |
-| Retry Handling | Retry eligible failed operations safely | P1 |
-| Outbox Pattern | Reliably publish events after committed database transactions | P2 |
+| Retry Handling | Retry eligible failed operations safely and idempotently | P0 |
+| Outbox Pattern | Reliably publish integration events when a concrete workflow requires it | P2 |
 
 ### Primary Roles
 
@@ -398,16 +400,14 @@ Tenant users must not access another tenant's data. Platform-level access must b
 
 The major dependency flow is:
 
-1. Platform foundation: tenant identification, authentication, authorization, and company settings.
-2. Master data: products, units, customers, suppliers, and warehouses.
-3. Inventory foundation: stock balances, stock movements, and reservations.
-4. Purchasing and goods receipt: supplier orders and incoming stock.
-5. Sales orders: order creation, stock validation, and reservation/release.
-6. Cloud POS and payment records: in-store transactions and payment handling.
-7. Accounting: financial posting for eligible sales, purchases, payments, and returns.
-8. E-commerce integrations: online order ingestion and fulfilment.
-9. Reporting and operational reliability: audit, monitoring, retries, and business reports.
-10. Future extensions: SaaS billing, offline POS, and additional business modules.
+1. Platform foundation: tenant identification, authentication, authorization, company/branch settings, and tenant isolation.
+2. Master data: products, units, customers, suppliers, warehouses, tax settings, and payment methods.
+3. Inventory foundation: stock balances, movements, transfers, reservations, adjustments, and approved costing rules.
+4. Purchasing: orders, approvals where applicable, partial receipts, supplier invoices, returns, payables, and supplier payments.
+5. Sales orders and fulfillment: reservations, goods issuance, invoices, returns, credit notes, receipts, and refunds.
+6. Operational finance: allocations, advances, cash/bank accounts and movements, manual reconciliation, and financial-period lifecycle.
+7. Reporting and reliability: audit, exports, job history, notifications, retries, and operational reports.
+8. Future extensions: dedicated POS, full general ledger, e-commerce integrations, offline POS, SaaS billing, and additional modules.
 
 Dependencies will be refined during detailed workflow, screen, data-model, and API design.
 
@@ -435,6 +435,6 @@ Depending on the module, completion requires:
 
 This catalog describes the planned product structure. It does not mean all listed modules or screens will be implemented immediately.
 
-The initial focus is a small, reliable, cloud-based MVP. Detailed field definitions, page layouts, validation messages, API contracts, and database entities will be documented separately before their respective implementation phases.
+The initial focus is a reliable online-first MVP. Dedicated POS, full general-ledger accounting, e-commerce integrations, real payment gateways, and offline synchronization are future increments. Detailed field definitions, page layouts, validation messages, API contracts, and database entities will be documented separately.
 
 Architecture decisions, module boundaries, and priorities may change when supported by business requirements and technical evidence.
