@@ -283,9 +283,7 @@ The Registration and Login screens will be considered complete when:
 
 The following are planned for separate specifications:
 
-- Forgot Password screen and complete recovery workflow.
 - Email Verification screen details.
-- Business Setup Wizard.
 - Dashboard and navigation layout.
 - User invitation and team onboarding.
 - Multi-factor authentication.
@@ -296,11 +294,11 @@ The following are planned for separate specifications:
 
 ## 10. Document Status
 
-**Status:** Initial specification drafted for review.
+Status: Initial screen specifications drafted for planning and review.
 
-These specifications describe planned behaviour and do not indicate that the screens or backend functionality have been implemented.
+This document currently covers Registration, Login, Forgot Password, Reset Password, and the initial Business Setup Wizard. Detailed UI layouts, database schemas, API contracts, and implementation remain separate activities.
 
----
+These specifications describe planned behaviour and do not indicate that the features have been implemented.
 
 ---
 
@@ -429,4 +427,556 @@ Forgot Password and Reset Password are included in the planned P0 authentication
 Email verification, registration, login, and password recovery must work together as a consistent account lifecycle.
 
 **Status:** Specifications drafted for planning; implementation remains pending.
+
+---
+
+---
+
+## 14. Business Setup Wizard
+
+### 14.1 Purpose
+
+The Business Setup Wizard helps a newly registered business owner configure the essential settings required to start using NexusFlow.
+
+The wizard covers:
+
+- Business Profile
+- Regional Settings
+- Branch and Warehouse Setup
+- Initial Product and Stock Setup
+- Setup Completion
+
+The wizard must remain simple for new businesses while supporting future expansion to multiple branches, multiple warehouses, and additional users.
+
+### 14.2 Screen Information
+
+| Property | Specification |
+|---|---|
+| Feature | Business Setup Wizard |
+| Initial Route | `/setup` (proposed) |
+| Primary User | Business Owner |
+| Access | Authenticated and authorized users |
+| Priority | P0 — MVP |
+| Entry Point | After successful registration, email verification, and login |
+| Completion Destination | Business Dashboard |
+
+### 14.3 General Behaviour
+
+- The wizard should display clear steps and progress.
+- The user should be able to save progress and continue later.
+- Previously saved information should be loaded when the user returns.
+- The user should be able to navigate to previous steps without losing saved information.
+- Required information must be validated before completing the relevant step.
+- The user should be able to skip initial product and stock setup.
+- The wizard must not create duplicate branches, warehouses, or products when a step is submitted more than once.
+- The system should resume the wizard when the user signs in again and setup remains incomplete.
+- The system must enforce tenant isolation and permissions on the server.
+
+---
+
+## 15. Business Profile Screen
+
+### 15.1 Purpose
+
+Capture the basic identity and business classification of the registered business.
+
+### 15.2 Screen Information
+
+| Property | Specification |
+|---|---|
+| Screen Name | Business Profile |
+| Parent Feature | Business Setup Wizard |
+| Priority | P0 — MVP |
+
+### 15.3 Fields
+
+| Field | Required | Default / Behaviour |
+|---|---|---|
+| Business / Company Name | Yes | Prefilled from registration; editable |
+| Business Type | Yes | User selects a supported type |
+| Country | Yes | User selects the business country |
+| Industry / Business Category | No | Optional |
+| Business Description | No | Not included in the initial version |
+
+### 15.4 Business Type Options
+
+The initial selection list should include:
+
+- Retail
+- Wholesale
+- E-commerce
+- Service
+- Other
+
+The available options may expand as NexusFlow supports additional business models.
+
+Business Type and Industry / Business Category must remain separate concepts. For example, a business may be Retail as its business type and Electronics as its industry.
+
+### 15.5 Actions
+
+**Continue**
+- Validate required fields.
+- Save the business profile.
+- Proceed to Regional Settings.
+
+**Back**
+- Return to the previous wizard step where applicable.
+
+### 15.6 Validation Rules
+
+- Business Name is required and must not contain only whitespace.
+- Business Type is required.
+- Country is required.
+- Only supported business type and country values may be submitted.
+- The backend must validate all submitted values.
+- The business owner must only be able to update the business profile belonging to their authorized tenant.
+
+### 15.7 Business Profile Workflow
+
+1. The owner opens the Business Profile step.
+2. The registered business name is prefilled.
+3. The owner confirms or edits the business name.
+4. The owner selects the business type and country.
+5. The owner may provide an industry category.
+6. The owner saves the information and continues.
+
+### 15.8 Acceptance Criteria
+
+- Registration data is prefilled correctly.
+- The owner can edit the business name.
+- Required fields are validated.
+- The saved profile is available when the owner returns to the wizard.
+- The profile is associated with the correct tenant.
+
+---
+
+## 16. Regional Settings Screen
+
+### 16.1 Purpose
+
+Configure the business's base currency, timezone, and preferred date format.
+
+### 16.2 Screen Information
+
+| Property | Specification |
+|---|---|
+| Screen Name | Regional Settings |
+| Parent Feature | Business Setup Wizard |
+| Priority | P0 — MVP |
+
+### 16.3 Fields
+
+| Field | Required | Default / Behaviour |
+|---|---|---|
+| Country | Yes | Prefilled from Business Profile |
+| Base Currency | Yes | Suggested using country; owner confirms |
+| Timezone | Yes | Suggested using country; owner confirms |
+| Date Format | Yes | Suggested default; owner may change |
+
+### 16.4 Default Selection Behaviour
+
+- Country selection should suggest a suitable base currency.
+- Country selection should suggest a suitable timezone.
+- Country selection should suggest a suitable date format.
+- Suggested values must be editable before saving.
+- If a country has multiple possible currencies or timezones, the owner must explicitly select the appropriate value.
+- Currency and timezone must not be inferred solely from the user's browser or device settings.
+
+Example:
+
+For a business operating in India, the application may suggest INR and Asia/Kolkata. The owner must confirm the selections.
+
+### 16.5 Important Financial Rule
+
+Base currency is a significant financial configuration.
+
+- The selected base currency should be stored explicitly.
+- The initial MVP should use one base currency per tenant for core financial reporting.
+- Multi-currency transactions and exchange-rate management are future capabilities.
+- Changing the base currency after financial transactions exist must require a controlled policy rather than silently converting existing records.
+
+### 16.6 Actions
+
+**Continue**
+- Validate and save the regional settings.
+- Proceed to Branch and Warehouse Setup.
+
+**Back**
+- Return to Business Profile.
+
+### 16.7 Acceptance Criteria
+
+- Suggested values are populated where appropriate.
+- The owner can review and change supported settings.
+- Invalid currency, timezone, or date-format values are rejected.
+- Saved settings are consistently used by the application.
+- Date and time values are displayed using the configured preferences.
+
+---
+
+## 17. Branch and Warehouse Setup
+
+### 17.1 Purpose
+
+Create the initial operating location for the business while supporting multiple branches and multiple warehouses within each branch.
+
+### 17.2 Business Structure
+
+The planned relationship is:
+
+Company / Tenant → Branches → Warehouses.
+
+A company may have multiple branches. Each branch may have multiple warehouses.
+
+### 17.3 Initial Branch
+
+The system should create a default branch for a newly configured business.
+
+| Property | Specification |
+|---|---|
+| Default Branch Name | Head Office |
+| Priority | P0 — MVP |
+| Editable Name | Yes |
+| Additional Branches | Supported as a future extension |
+
+### 17.4 Default Branch Behaviour
+
+- Create one default branch for the tenant during initial setup.
+- Use Head Office as the default branch name.
+- Allow the owner to rename the branch during setup.
+- Ensure the branch belongs to the correct tenant.
+- Prevent duplicate default branch creation if the setup step is retried.
+- Preserve the branch identity when its name is changed.
+
+Additional branches can be created later through Branch Management.
+
+### 17.5 Default Warehouse
+
+The owner should be able to configure an initial warehouse associated with the default branch.
+
+| Field | Required | Behaviour |
+|---|---|---|
+| Warehouse Name | Yes | Prefilled with a sensible default, editable |
+| Branch | Yes | Associated with the default branch |
+| Description | No | Optional |
+| Active Status | System-managed | Newly created warehouse is active |
+
+The initial warehouse should be created as part of setup unless the product requirements explicitly allow warehouse creation to be deferred.
+
+### 17.6 Multiple Branches and Warehouses
+
+The future structure must support:
+
+- Multiple branches within one tenant.
+- Multiple warehouses within one branch.
+- Warehouse creation after the initial setup.
+- Additional branches after the initial setup.
+- Branch and warehouse activation or deactivation subject to business rules.
+- Stock reporting by branch and warehouse.
+- Inventory transfers between eligible warehouses.
+
+The initial MVP may implement the default branch and warehouse first. Advanced branch management and transfers can be delivered in later phases.
+
+### 17.7 Important Inventory Rules
+
+- Each warehouse must belong to a valid branch.
+- Each branch must belong to a tenant.
+- A warehouse must not be associated with a branch belonging to another tenant.
+- Stock movements must identify the appropriate warehouse.
+- A branch or warehouse containing historical transactions must not be deleted in a way that breaks business records.
+- Inactive branches and warehouses must not accept new transactions unless explicitly permitted by policy.
+
+### 17.8 Actions
+
+**Continue**
+- Validate and save the branch and warehouse configuration.
+- Proceed to Initial Product and Stock Setup.
+
+**Back**
+- Return to Regional Settings.
+
+### 17.9 Acceptance Criteria
+
+- The default branch is created exactly once.
+- The owner can rename the default branch.
+- The initial warehouse is associated with the correct branch.
+- Branch and warehouse records are tenant-scoped.
+- The data model supports multiple branches and multiple warehouses per branch.
+- Repeated submissions do not create duplicate default records.
+
+---
+
+## 18. User Management and User Limits
+
+### 18.1 Purpose
+
+Define how the initial business owner obtains access and how additional employees will be managed.
+
+### 18.2 Initial Owner Account
+
+- The owner account is created during Registration.
+- The owner account is associated with the newly registered tenant.
+- The owner receives the initial administrative permissions for that tenant.
+- The owner must verify their email before normal account activation.
+- The owner must not be required to create employee accounts during registration or the initial wizard.
+
+### 18.3 Employee Accounts
+
+Additional users will be managed after registration through User Management.
+
+Planned capabilities include:
+
+- Create or invite users.
+- Assign roles and permissions.
+- Activate or deactivate user accounts.
+- Manage user access to authorized branches and warehouses when supported.
+- Review user activity where appropriate.
+
+Advanced invitation workflows and detailed branch-level permission management may be implemented in later phases.
+
+### 18.4 User Count During Registration
+
+The Registration screen must not ask the business owner how many users they need.
+
+The initial MVP will create the owner account only. Additional users can be added later.
+
+### 18.5 Future Subscription-Based User Limits
+
+Subscription-based user limits are planned for a future SaaS phase.
+
+Future capabilities may include:
+
+- Subscription plans.
+- Maximum permitted users per plan.
+- Current active-user count.
+- Usage-limit warnings.
+- Upgrade options when limits are reached.
+
+These subscription controls are not part of the initial MVP unless explicitly added to the agreed scope.
+
+### 18.6 Security Rules
+
+- User creation must be authorized.
+- Users must belong to the correct tenant.
+- A user must not gain permissions simply by changing a request parameter.
+- Roles and permissions must be enforced on the server.
+- Passwords must never be sent through email as plaintext.
+- Employee invitation flows should use secure invitation links rather than emailing passwords.
+
+### 18.7 Acceptance Criteria
+
+- Registration creates the initial owner account.
+- The owner can continue setup without creating employees.
+- User Management can be introduced independently of Registration.
+- Future subscription limits can be added without redesigning the Registration screen.
+
+---
+
+## 19. Initial Product and Stock Setup
+
+### 19.1 Purpose
+
+Allow the business owner to add initial products and optionally record opening stock.
+
+### 19.2 Screen Information
+
+| Property | Specification |
+|---|---|
+| Screen Name | Initial Product and Stock Setup |
+| Parent Feature | Business Setup Wizard |
+| Priority | P0 — Basic Setup; advanced import features later |
+
+### 19.3 Available Choices
+
+The owner must be offered two choices:
+
+**Option A — Add Products Now**
+
+The owner may add one or more products and optionally record opening stock.
+
+**Option B — Skip for Now**
+
+The owner may complete the setup wizard without adding products. Products and stock can be added later from their respective management screens.
+
+### 19.4 Initial Product Fields
+
+The initial product form should support:
+
+| Field | Required | Purpose |
+|---|---|---|
+| Product Name | Yes | Identify the product |
+| SKU / Product Code | Based on product policy | Identify the product within the tenant |
+| Category | Optional | Classify the product |
+| Unit of Measurement | Yes | Define the product's unit |
+| Barcode | Optional | Support scanning when available |
+| Opening Quantity | Conditional | Record initial stock when supplied |
+| Warehouse | Conditional | Identify the warehouse holding opening stock |
+
+Selling price, purchase cost, tax configuration, variants, serial numbers, batch tracking, and advanced pricing require separate product specifications.
+
+### 19.5 Opening Stock Rules
+
+- Opening quantity must be valid for the product's unit.
+- Opening stock must be associated with an eligible warehouse.
+- Opening stock must create an auditable stock movement or opening-stock transaction.
+- The system must not silently change inventory balances without recording the reason and transaction.
+- Duplicate product submissions must be handled safely.
+- Stock balances must remain consistent with the stock movement history.
+
+### 19.6 Skip Behaviour
+
+When the owner chooses Skip for Now:
+
+- The system must not create dummy products or opening stock.
+- The wizard can proceed to completion.
+- The owner can create products and record stock later.
+- The application should make the product setup entry point discoverable from the dashboard.
+
+### 19.7 Acceptance Criteria
+
+- The owner can add initial products.
+- Opening stock is recorded only when valid data is supplied.
+- The owner can skip product setup.
+- Skipping does not prevent access to the dashboard.
+- Product and stock records belong to the correct tenant.
+- Stock history remains auditable.
+
+---
+
+## 20. Setup Completion Screen
+
+### 20.1 Purpose
+
+Confirm that the essential business setup is complete and direct the owner to the NexusFlow Dashboard.
+
+### 20.2 Completion Behaviour
+
+After the owner completes the required setup steps:
+
+1. Validate that required business settings exist.
+2. Confirm that the default branch exists.
+3. Confirm that the initial warehouse exists according to the setup policy.
+4. Save the setup completion status.
+5. Display a completion message.
+6. Provide a Go to Dashboard action.
+
+Product setup may remain incomplete if the owner chose Skip for Now.
+
+### 20.3 Dashboard Navigation
+
+The owner should be able to access the Dashboard after completing required setup.
+
+The dashboard may show onboarding guidance for optional tasks such as:
+
+- Adding products.
+- Recording opening stock.
+- Creating employee accounts.
+- Adding additional branches or warehouses.
+- Configuring further business settings.
+
+### 20.4 Incomplete Setup
+
+- If the owner exits before completing setup, saved progress must remain available.
+- After the next login, the owner should be redirected to the next incomplete required step.
+- The owner must not be forced to repeat completed steps unnecessarily.
+- The backend must determine the setup status.
+
+### 20.5 Acceptance Criteria
+
+- The owner can complete the wizard without adding products.
+- Required configuration is validated.
+- The dashboard is accessible after required setup is complete.
+- Incomplete setup can be resumed.
+- Repeated completion requests do not create duplicate records.
+
+---
+
+## 21. Business Setup Navigation
+
+The planned flow is:
+
+Registration → Email Verification → Login → Business Profile → Regional Settings → Branch and Warehouse Setup → Initial Product and Stock Setup → Setup Completion → Dashboard.
+
+### Navigation Rules
+
+- Registration creates the pending business registration and owner account.
+- Email verification enables normal account activation.
+- The authenticated owner starts the Business Setup Wizard.
+- Each step saves its data before the user proceeds.
+- Back navigation must preserve previously entered data.
+- Product setup can be skipped.
+- Setup completion must be determined by the backend.
+- Users must not be able to mark required setup steps complete merely by changing a frontend value.
+
+---
+
+## 22. Business Setup Data and Integrity Rules
+
+The detailed database design will be documented separately. However, the following business rules must guide that design:
+
+- Every business tenant must have an isolated data scope.
+- Every branch must belong to one tenant.
+- Every warehouse must belong to a valid branch and tenant.
+- The default branch must be created only once per tenant.
+- The initial warehouse must be associated with the default branch.
+- The owner account must be associated with the correct tenant.
+- User permissions must be checked by the backend.
+- Product and stock records must belong to the correct tenant.
+- Important inventory changes must be recorded in stock history.
+- Repeated requests must not create duplicate records.
+- Setup status must persist between sessions.
+- Financial settings must be stored explicitly and used consistently.
+
+---
+
+## 23. Updated Scope
+
+The initial Business Setup Wizard includes:
+
+- Business Profile.
+- Regional Settings.
+- Default branch creation and editable branch name.
+- Initial warehouse creation.
+- Basic initial product creation.
+- Optional opening stock entry.
+- Skip option for product and stock setup.
+- Setup progress persistence.
+- Setup completion and dashboard navigation.
+
+The following capabilities are planned for later phases:
+
+- Advanced multi-branch management.
+- Advanced warehouse transfers.
+- Subscription-based user limits.
+- Subscription billing.
+- Bulk product imports.
+- Advanced product variants and inventory tracking.
+- Advanced onboarding automation.
+- Self-service plan selection and billing.
+
+---
+
+## 24. Updated Acceptance Criteria
+
+The Business Setup Wizard is ready for implementation when:
+
+- Each screen has an agreed purpose and field list.
+- Required and optional fields are identified.
+- Navigation and recovery from incomplete setup are defined.
+- Default branch and warehouse rules are documented.
+- Multi-branch and multi-warehouse relationships are supported by the intended data model.
+- User management is separated from initial registration.
+- Product setup can be skipped.
+- Tenant isolation and authorization requirements are documented.
+- Relevant success, failure, and retry paths are specified.
+- Database and API designs are completed before the relevant features are implemented.
+
+---
+
+## 25. Business Setup Specification Status
+
+**Status:** Initial specification drafted for planning and review.
+
+These sections describe planned behaviour. They do not indicate that the wizard, branch management, warehouse management, user management, or inventory features have been implemented.
+
 
