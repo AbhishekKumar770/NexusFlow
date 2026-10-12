@@ -7,8 +7,8 @@ This document defines the purpose, fields, actions, validations, user flows, and
 The specifications will guide future UI/UX design, database design, API development, and implementation.
 
 **Project Status:** Planning  
-**Initial Approach:** Cloud-first, multi-tenant business platform  
-**Scope of This Version:** Registration, Login, Password Recovery, and Business Setup Wizard
+**Initial Approach:** Online-first, multi-tenant business platform  
+**Scope of This Version:** Authentication and Business Setup Wizard screens; core MVP workflows follow the approved MVP scope
 
 ---
 
@@ -295,6 +295,15 @@ The following are planned for separate specifications:
 ## 10. Document Status
 
 Status: Initial screen specifications drafted for planning and review.
+
+**Scope alignment notes**
+- Registration, login, email verification, password recovery, and the Business Setup Wizard remain P0.
+- The setup flow's initial branch and warehouse are in MVP scope; advanced multi-branch administration and complex transfer workflows may follow later.
+- The core MVP sales screens must represent sales orders, reservations, goods issue, sales invoices, receipts/allocations, returns, credit notes, and refunds as distinct workflows where required.
+- Dedicated POS checkout/cashier-session screens, e-commerce channel screens, real payment-provider screens, and offline POS synchronization are future increments.
+- Operational finance screens for receivables/payables, customer receipts, supplier payments, cash/bank transactions, manual reconciliation, and financial-period controls are MVP scope.
+- Chart of accounts, general ledger, journal entries, trial balance, formal P&L, and balance sheet screens are future-phase scope.
+
 
 This document currently covers Registration, Login, Forgot Password, Reset Password, and the initial Business Setup Wizard. Detailed UI layouts, database schemas, API contracts, and implementation remain separate activities.
 
