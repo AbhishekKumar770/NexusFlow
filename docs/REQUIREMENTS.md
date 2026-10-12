@@ -4,7 +4,7 @@
 
 NexusFlow is a planned multi-tenant, cloud-based business management platform designed to support online and offline business operations through a unified system.
 
-The long-term vision includes product and inventory management, purchasing, sales, point of sale (POS), e-commerce, accounting, finance, reporting, and optional industry-specific modules.
+The long-term vision includes product and inventory management, purchasing, sales, point of sale (POS), e-commerce, accounting, finance, reporting, and optional industry-specific modules. The finalized MVP decisions define the initial release boundary; capabilities described as future extensions are not included in the MVP unless explicitly approved.
 
 The initial release will focus on a secure, reliable, online-first business foundation. Offline-capable POS functionality and synchronization are planned for a later phase.
 
@@ -83,12 +83,13 @@ These requirements describe intended behavior and do not imply that the function
 ### FR-06: Supplier and Purchasing Management
 - Create and maintain supplier records.
 - Create purchase orders containing products, quantities, prices, and applicable terms.
-- Support permitted purchase approval and cancellation rules.
-- Record goods receipts, including partial receipts where supported.
-- Update inventory through controlled stock movements.
-- Record purchase invoice information and supplier balances.
-- Support purchase returns and supplier payment workflows in later increments.
-- Prevent duplicate processing of goods receipts.
+- Support controlled purchase approval and cancellation rules.
+- Record goods receipts, including partial receipts.
+- Update inventory through controlled stock movements; goods receipt is the stock-in event.
+- Record purchase invoice information, supplier balances, and due dates.
+- Support purchase returns, supplier payments, supplier advances, and controlled payment allocation within the finalized operational-finance scope.
+- Support supplier invoice matching against purchase orders and goods receipts, with controlled handling of price or quantity differences.
+- Prevent duplicate processing of goods receipts and other critical purchasing requests.
 
 ### FR-07: Customer Management
 - Create and maintain customer records.
@@ -106,14 +107,13 @@ These requirements describe intended behavior and do not imply that the function
 - Keep payment status distinct from order status.
 - Record applicable inventory and financial effects.
 
-### FR-09: Point of Sale
-- Support cloud-connected POS operations in the initial online-first approach.
-- Allow authorized cashiers to select products, enter quantities, and calculate transaction totals.
-- Apply configured prices, discounts, and tax rules.
-- Record supported payment methods and generate invoices or receipts.
-- Maintain traceable cashier and transaction history.
-- Support sales returns and refunds in a subsequent increment.
-- Validate stock and concurrent sales through shared inventory rules.
+### FR-09: Point of Sale (Future Increment)
+- Dedicated POS workflows are outside the initial MVP.
+- If introduced in a later increment, POS must use shared product, pricing, tax, inventory, payment, and sales rules.
+- Authorized cashiers must be able to select products, enter quantities, and calculate transaction totals.
+- The future POS must maintain traceable cashier and transaction history.
+- Returns and refunds must follow the shared controlled return and refund workflows.
+- Offline-capable POS and synchronization remain a separate future phase.
 
 ### FR-10: E-commerce and Online Orders
 - Accept online orders through an authorized storefront integration or API.
@@ -123,31 +123,28 @@ These requirements describe intended behavior and do not imply that the function
 - Plan for fulfilment, shipping, cancellation, and returns.
 - Handle repeated requests and payment callbacks safely.
 
-### FR-11: Payment Processing
-- Simulate payment success and failure without processing real money in the MVP.
-- Record payment status and relevant transaction references.
-- Handle repeated payment requests safely.
-- Define reservation-release behavior for failed or cancelled payments.
-- Introduce real payment-provider integration only after the relevant security and reconciliation requirements are defined.
+### FR-11: Operational Payments and Payment Processing
+- The MVP supports the finalized operational payment workflows, including supported payment methods, receipts, supplier payments, manual allocations, customer and supplier advances, refunds, and cash/bank transaction links where specified by the MVP decisions.
+- Payment records must have explicit statuses and relevant transaction references, and critical requests must be safe against duplicate processing.
+- Sales-order reservations must follow the finalized order lifecycle; payment failure must not release stock unless the applicable business rule explicitly requires it.
+- A mock payment-provider flow may be used for learning and testing, but it does not replace operational payment recording.
+- Real external payment-provider integration is deferred until its security, reconciliation, and operational requirements are defined.
 
-### FR-12: Accounting and Finance
-- Define a chart of accounts before implementing financial posting.
-- Support double-entry accounting with balanced journal entries.
-- Link financial entries to their source business transactions.
-- Introduce accounts receivable, accounts payable, cash and bank management, and expense tracking incrementally.
-- Define accounting treatment for sales, purchases, payments, refunds, returns, and inventory valuation.
-- Provide controlled correction, reversal, and reconciliation workflows.
-- Support relevant financial reports, including profit and loss and balance sheet, when the accounting module is ready.
-- Configure tax and accounting policies for the intended jurisdictions.
-- Prevent ordinary business operations from silently overwriting posted financial records.
+### FR-12: Operational Finance (MVP) and Full Accounting (Future Phase)
+- The MVP includes the finalized operational-finance scope: customer receivables and supplier payables, payment recording and allocation, advances, refunds, cash/bank account masters and transactions, internal transfers, opening balances, and manual reconciliation as specified by the MVP decisions.
+- Link operational financial transactions to their source business documents and preserve traceable correction/reversal history.
+- Protect posted transactions from silent overwrite; use controlled reversals or compensating transactions where required.
+- The MVP does not include a full general ledger, chart of accounts, double-entry accounting engine, or formal profit-and-loss and balance-sheet statements.
+- Full accounting, jurisdiction-specific accounting compliance, and formal financial statements are future-phase capabilities requiring separate approved requirements.
 
-### FR-13: Returns and Cancellations
+### FR-13: Returns, Credits, Refunds, and Cancellations
 - Validate return eligibility against the original transaction.
 - Prevent cumulative returned quantities from exceeding eligible quantities.
 - Record accepted and rejected returned quantities where applicable.
-- Update stock according to the condition and return policy.
-- Record applicable refund, supplier credit, and accounting adjustments.
-- Make repeated cancellation and return requests safe against duplicate processing.
+- Update stock according to the return condition and policy.
+- Record eligible customer credit notes, supplier credits, customer refunds, and supplier refunds within the finalized operational-finance scope.
+- Make repeated cancellation, return, credit, and refund requests safe against duplicate processing.
+- Formal general-ledger accounting entries for these operations remain outside the MVP.
 
 ### FR-14: Notifications and Asynchronous Processing
 - Generate relevant business events for eligible transactions.
@@ -166,7 +163,7 @@ These requirements describe intended behavior and do not imply that the function
 - Ensure reported totals follow documented calculation and accounting rules.
 
 ### FR-16: Future Offline-Capable POS
-Offline POS functionality is not part of the initial online-first MVP.
+Dedicated POS workflows are outside the initial MVP, and offline POS functionality is not part of the initial online-first MVP.
 
 Before implementation, the system must define:
 - Secure local persistence and device authorization.
@@ -239,21 +236,35 @@ The initial MVP will prioritize:
 
 1. Tenant and user foundation.
 2. Authentication, authorization, and tenant isolation.
-3. Product catalog.
-4. Warehouse and inventory management.
-5. Customer and supplier master data.
-6. Basic purchasing and goods receipt.
-7. Customer orders and inventory reservation.
-8. Mock payment processing.
-9. Order cancellation and reservation release.
-10. Basic audit history and API documentation.
-11. Automated tests for important business rules.
+3. Company, branch, warehouse, and product master data.
+4. Inventory movements, reservations, transfers, adjustments, and moving weighted-average valuation rules as specified by the MVP decisions.
+5. Customer and supplier master data, including opening balances where applicable.
+6. Purchasing, purchase approvals, partial goods receipt, supplier invoices, purchase returns, and supplier payment workflows.
+7. Sales orders, stock reservations, partial fulfillment, goods issuance, sales invoices, returns, credit notes, and controlled cancellations.
+8. Operational payments, allocations, advances, refunds, cash/bank transactions, and manual reconciliation within the approved MVP scope.
+9. Financial-period lifecycle controls and operational period-end reports, without a full general ledger.
+10. Controlled CSV imports/exports, background jobs, in-app notifications, and audit histories as specified by the MVP decisions.
+11. React + TypeScript + Ant Design + Vite frontend, integrated with the ASP.NET Core Web API.
+12. API documentation, automated tests, security checks, observability, backups, restore validation, and controlled deployment.
 
-The exact boundary will be finalized after reviewing the data model and dependencies.
+The finalized MVP decisions define the detailed boundary and dependencies. Dedicated POS workflows, full accounting, e-commerce storefront integration, real payment-provider integration, and offline POS synchronization remain future increments unless separately approved.
 
-Cloud-connected POS, accounting, e-commerce integration, real payment providers, and advanced reporting will be introduced in subsequent increments. Offline POS synchronization is a later phase.
+Dedicated POS workflows, full accounting/general ledger, e-commerce storefront integration, real payment-provider integration, and offline POS synchronization will be introduced in subsequent increments. Operational-finance features explicitly included in the finalized MVP decisions are not deferred by this statement.
 
-## 6. Acceptance Criteria
+## 6. Frontend Technology
+
+- The MVP frontend will use React with TypeScript.
+- Vite will be used for frontend development and production builds.
+- Ant Design will provide the primary UI component system for forms, tables, navigation, dialogs, and other ERP screens.
+- TanStack Query will manage server state and API data fetching/caching.
+- React Router will manage client-side navigation and protected route presentation; server-side authorization remains authoritative.
+- A shared Fetch API client will centralize API communication and error handling.
+- Ant Design Forms will be used for standard form workflows, with business rules also validated by the backend.
+- Frontend tests will use Vitest, React Testing Library, and Playwright.
+- English and Arabic localization, including right-to-left layout, are part of the planned frontend requirements.
+- Frontend architecture must follow the finalized MVP scope; selecting a frontend technology does not imply every future business module is included in the MVP.
+
+## 7. Acceptance Criteria
 
 The initial MVP is functionally ready when:
 
@@ -268,7 +279,7 @@ The initial MVP is functionally ready when:
 - Stock movements and important actions are traceable.
 - Automated tests cover the principal success and failure workflows.
 
-## 7. Out of Scope for the Initial MVP
+## 8. Out of Scope for the Initial MVP
 
 - Real payment gateway integration
 - Production email or WhatsApp delivery
@@ -276,11 +287,11 @@ The initial MVP is functionally ready when:
 - Production-scale multi-region deployment
 - Kubernetes orchestration
 - Immediate decomposition into multiple microservices
-- Complete frontend application
+- Dedicated POS frontend/workflows (the core React + TypeScript + Ant Design + Vite ERP frontend is part of the MVP)
 - Full accounting and tax compliance for every jurisdiction
 - All optional industry-specific modules
 
-## 8. Status
+## 9. Status
 
 Status: Planning.
 
