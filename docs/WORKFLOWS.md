@@ -2,9 +2,9 @@
 
 ## 1. Purpose
 
-This document describes the planned business workflows for NexusFlow, a multi-tenant SaaS platform supporting online and offline business operations.
+This document describes the planned business workflows for NexusFlow, an online-first, multi-tenant SaaS platform.
 
-The initial system will be cloud-first. Offline-capable POS functionality and synchronization will be introduced in a later phase.
+The initial MVP requires connectivity to the cloud application. Dedicated POS workflows, e-commerce integrations, real payment-provider integrations, and offline-capable POS synchronization are future increments.
 
 These workflows define intended behavior, not completed functionality.
 
@@ -83,32 +83,30 @@ These workflows define intended behavior, not completed functionality.
 - Inventory and financial postings must be auditable.
 - Supplier balances must follow the configured accounting rules.
 
-## 6. Offline POS Sales Workflow — Online-First MVP
+## 6. Sales Order and Fulfilment Workflow — MVP
 
 ### Flow
 
-1. A cashier signs in to the cloud-based application.
-2. The cashier selects the applicable branch or warehouse.
-3. Products are scanned or selected.
-4. The system retrieves current product prices and eligible stock information.
-5. The cashier adds items, quantities, discounts, and taxes according to permissions and business rules.
-6. The system validates the sale.
-7. Payment is recorded using a supported payment method.
-8. The sale is finalized according to the configured transaction rules.
-9. Inventory movements and applicable accounting entries are recorded.
-10. The invoice or receipt is generated.
-11. The transaction becomes available in sales reports and audit history.
+1. An authorized user creates a sales order for the correct tenant and applicable branch/warehouse.
+2. The system validates products, quantities, prices, discounts, and applicable taxes server-side.
+3. The order is confirmed or approved according to permissions and configured business rules.
+4. Eligible stock is reserved when the order reaches the configured reservation point.
+5. Warehouse staff issue goods against the eligible order, including partial fulfillment where permitted.
+6. Goods issuance decreases on-hand stock through an auditable stock movement.
+7. A sales invoice is created according to the approved invoice-timing rules; invoicing does not independently reduce stock.
+8. Customer receipts are recorded and allocated against eligible balances through the operational-finance workflow.
+9. The transaction becomes available in operational reports and audit history.
 
 ### Business Rules
 
-- The MVP requires connectivity to the cloud application.
+- The MVP requires connectivity to the cloud application; dedicated cashier/POS checkout is a future increment.
 - Prices, discounts, taxes, and payment details must be validated server-side.
-- The sale must not be finalized twice because of a repeated request.
-- Inventory updates must be protected against concurrent sales.
-- Receipt generation must reflect the committed transaction.
-- Cash and non-cash payment totals must be traceable.
+- Orders, goods issues, invoices, receipts, and allocations must each be protected against duplicate processing.
+- Stock reservations and goods issues must be protected against concurrent operations.
+- On-hand stock decreases at goods issue, not merely when an invoice is created.
+- Receipts, invoices, and reports must reflect committed transactions.
 
-## 7. Online E-commerce Order Workflow
+## 7. Online E-commerce Order Workflow — Future Phase
 
 ### Flow
 
@@ -182,7 +180,7 @@ These workflows define intended behavior, not completed functionality.
 3. Returned items are inspected where required.
 4. Accepted items update inventory according to their condition.
 5. A refund, credit, or other permitted settlement is recorded.
-6. Applicable accounting adjustments and audit records are created.
+6. Applicable operational balance adjustments and audit records are created; full general-ledger postings are a future phase.
 
 ### Purchase Return
 
@@ -190,7 +188,7 @@ These workflows define intended behavior, not completed functionality.
 2. Returnable quantities and supplier rules are validated.
 3. The returned quantities are recorded.
 4. Inventory is reduced through a stock movement where applicable.
-5. Supplier credit or payable adjustments are recorded.
+5. Supplier credits or payable adjustments are recorded through the operational-finance workflow.
 6. The transaction is linked to its original purchase records.
 
 ### Business Rules
@@ -200,37 +198,34 @@ These workflows define intended behavior, not completed functionality.
 - Repeated requests must not duplicate returns or refunds.
 - The system must preserve the original transaction history.
 
-## 11. Accounting and Finance Workflow
+## 11. Operational Finance Workflow (MVP) and General Ledger (Future Phase)
 
-### Sales Posting
+### Operational Finance — MVP
 
-1. A qualifying sale is finalized.
-2. The applicable revenue, tax, receivable, cash, or clearing entries are determined.
-3. Inventory and cost-of-goods-sold entries are recorded when required by the configured accounting policy.
-4. The journal entry is validated and posted.
-5. The transaction is linked to its source document.
+1. Record a customer receipt or supplier payment against the correct tenant and counterparty.
+2. Validate the cash/bank account, payment amount, and permitted allocation limits.
+3. Allocate receipts/payments against eligible receivable or payable balances; retain unallocated advances where permitted.
+4. Record cash/bank transactions, internal transfers, opening balances, and eligible refunds.
+5. Perform manual reconciliation against eligible recorded transactions.
+6. Apply controlled corrections or reversals and retain audit history.
+7. Manage financial periods through the approved create, extend, close, and reopen workflow.
+8. Generate operational finance reports from source records.
 
-### Purchase Posting
+### Full General Ledger — Future Phase
 
-1. A qualifying goods receipt or purchase invoice is recorded.
-2. Inventory, expense, tax, and payable treatment is determined according to the accounting policy.
-3. The journal entry is validated and posted.
-4. Supplier balances and relevant reports are updated.
-
-### Payment and Refund Posting
-
-1. A payment or refund is confirmed.
-2. The system identifies the relevant cash, bank, clearing, receivable, or payable accounts.
-3. The appropriate accounting entries are recorded.
-4. Reconciliation information is retained.
+1. Define the tenant's chart of accounts and posting policies.
+2. Determine the accounting entries for qualifying source transactions.
+3. Validate and post balanced journal entries linked to source documents.
+4. Generate formal trial balance, profit-and-loss, balance-sheet, and general-ledger reports.
 
 ### Business Rules
 
-- Posted journal entries must balance.
-- Posted financial transactions must not be silently overwritten.
+- Operational finance transactions must not be silently overwritten.
 - Corrections must use controlled reversal or adjustment workflows.
-- Tax and accounting policies must be configurable for the applicable jurisdiction.
-- Financial reports must be derived from properly recorded transactions.
+- Payment allocations and account balances must be validated server-side.
+- Financial-period operations must enforce authorization and retain audit history.
+- Operational reports must not be represented as formal general-ledger statements.
+- When general-ledger functionality is implemented in a future phase, posted journal entries must balance and tax/accounting policies must be configurable for the applicable jurisdiction.
 
 ## 12. Future Offline-Capable POS Workflow
 
@@ -263,25 +258,30 @@ Offline billing is a future phase, not part of the initial online-first MVP.
 
 Offline operation must not assume that a locally displayed stock balance remains globally accurate while disconnected.
 
-## 13. Future Event-Driven Processing
+## 13. Background Jobs and Future Event-Driven Processing
 
-### Planned Flow
+### MVP Background Processing
 
-1. A business transaction commits successfully.
-2. The transaction records an applicable outbox message atomically.
-3. A background publisher sends pending messages to the message broker.
-4. Consumers validate and process messages idempotently.
-5. Transient failures are retried with bounded policies.
-6. Persistent failures are recorded for investigation and recovery.
-7. Operational logs and tracing support diagnosis.
+1. An approved asynchronous task is created with a traceable job identifier.
+2. A background worker processes the task using tenant-aware authorization and idempotent handling.
+3. Transient failures follow a bounded retry policy.
+4. Job status, attempts, outcomes, and persistent failures are recorded for investigation and recovery.
+5. Users with permission can review job history and eligible cancellation/recovery options.
+
+### Future Event-Driven Processing
+
+1. When a concrete workflow requires reliable event publication, the source transaction records an outbox message atomically.
+2. A background publisher sends pending messages to the selected messaging infrastructure.
+3. Consumers validate and process messages idempotently.
+4. Operational logs and tracing support diagnosis.
 
 ### Business Rules
 
-- Messages may be delivered more than once.
-- Consumers must not assume exactly-once delivery.
-- Publishing failure must not silently lose a committed business event.
-- Notification failure must not incorrectly reverse an already committed order.
-- Message contracts and versioning must be documented.
+- Background jobs must be tenant-aware, observable, and safe to retry.
+- Duplicate execution must not duplicate business effects.
+- When an outbox/broker is introduced, messages may be delivered more than once and consumers must be idempotent.
+- Notification failure must not incorrectly reverse an already committed business transaction.
+- Future message contracts and versioning must be documented.
 
 ## 14. Multi-Tenant Security Workflow
 
@@ -304,6 +304,6 @@ Offline operation must not assume that a locally displayed stock balance remains
 
 Status: Initial design.
 
-The online-first MVP workflows will be refined into API contracts, data models, state transitions, and automated acceptance tests before implementation.
+The online-first MVP workflows—including purchasing, partial receipts, supplier invoices/payables/payments, sales orders, reservations, goods issuance, invoices, operational finance, returns, financial-period controls, audit, exports, and background-job history—will be refined into API contracts, data models, state transitions, and automated acceptance tests before implementation.
 
-Offline POS synchronization, advanced integrations, and distributed workflows will be designed and validated in their respective later phases.
+Dedicated POS checkout, e-commerce integrations, real payment gateways, full general-ledger accounting, offline POS synchronization, and broker-based distributed workflows will be designed and validated in their respective later phases.
