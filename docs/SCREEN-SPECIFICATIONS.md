@@ -299,3 +299,134 @@ The following are planned for separate specifications:
 **Status:** Initial specification drafted for review.
 
 These specifications describe planned behaviour and do not indicate that the screens or backend functionality have been implemented.
+
+---
+
+---
+
+## 11. Forgot Password Screen
+
+### 11.1 Purpose
+
+Allow users to request a secure password reset link when they cannot remember their password.
+
+### 11.2 Screen Information
+
+| Property | Specification |
+|---|---|
+| Screen Name | Forgot Password |
+| Route | `/forgot-password` (proposed) |
+| Access | Public |
+| Priority | P0 — MVP |
+
+### 11.3 Fields
+
+| Field | Required | Purpose |
+|---|---|---|
+| Email Address | Yes | Identify the account for password recovery |
+
+### 11.4 Actions
+
+**Send Reset Link**
+- Validate the email format.
+- Submit the password recovery request.
+- Display a generic confirmation message that does not reveal whether the account exists.
+
+**Back to Login**
+- Navigate to the Login screen.
+
+**Resend Reset Link**
+- Allow another request subject to rate limits and token rules.
+
+### 11.5 Workflow
+
+1. The user opens Forgot Password.
+2. The user enters their email address.
+3. The backend validates and rate-limits the request.
+4. If eligible, the system generates a secure password reset token and initiates email delivery.
+5. The screen displays a generic confirmation message.
+6. The user opens the reset link received by email.
+7. The system validates the token before allowing a password change.
+
+### 11.6 Security Rules
+
+- Never send a password by email.
+- Do not reveal whether an email address is registered.
+- Reset tokens must be securely generated, single-use, and expire after 30 minutes.
+- Apply rate limits to repeated reset requests.
+- Do not log reset tokens or expose them in error messages.
+- An invalid or expired token must not allow a password change.
+
+---
+
+## 12. Reset Password Screen
+
+### 12.1 Purpose
+
+Allow a user with a valid password reset link to choose a new password.
+
+### 12.2 Screen Information
+
+| Property | Specification |
+|---|---|
+| Screen Name | Reset Password |
+| Route | `/reset-password` (proposed) |
+| Access | Public route with a valid reset token |
+| Priority | P0 — MVP |
+
+### 12.3 Fields
+
+| Field | Required | Purpose |
+|---|---|---|
+| New Password | Yes | Set the replacement password |
+| Confirm Password | Yes | Confirm the new password |
+
+The reset token will be validated by the backend and will not be treated as a replacement for normal authentication.
+
+### 12.4 Actions
+
+**Reset Password**
+- Validate both password fields.
+- Verify that the reset token is valid and unused.
+- Apply the configured password policy.
+- Update the password securely.
+- Invalidate the reset token after successful completion.
+- Revoke existing login sessions and require the user to sign in again.
+
+**Back to Login**
+- Navigate to the Login screen.
+
+**Request New Reset Link**
+- Provide a recovery path when the token is expired or invalid.
+
+### 12.5 Workflow
+
+1. The user opens the password reset link.
+2. The backend validates the token.
+3. The user enters a new password and confirms it.
+4. The backend validates the token again when processing the submission.
+5. The password is securely updated.
+6. The reset token is invalidated.
+7. Existing sessions are revoked according to the authentication policy.
+8. The user sees a success message and can return to Login.
+
+### 12.6 Validation and Error Handling
+
+- Both password fields are required.
+- The password and confirmation must match.
+- The new password must satisfy the configured password policy.
+- Invalid, expired, or already-used tokens must be rejected.
+- Repeated submissions must not reuse a successful reset token.
+- Unexpected failures must not expose sensitive information.
+- A failed reset must not be reported as successful.
+
+---
+
+## 13. Updated Scope and Document Status
+
+Forgot Password and Reset Password are included in the planned P0 authentication scope.
+
+Email verification, registration, login, and password recovery must work together as a consistent account lifecycle.
+
+**Status:** Specifications drafted for planning; implementation remains pending.
+
