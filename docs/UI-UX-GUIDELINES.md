@@ -54,12 +54,13 @@ Illustrative groups include:
 - Master Data
 - Inventory
 - Purchasing
-- Sales & POS
-- Accounting & Finance
+- Sales
+- Purchasing
+- Operational Finance
 - Reports
 - Settings
 
-The exact module and screen hierarchy must remain aligned with the approved requirements and screen specifications.
+Dedicated POS navigation and cashier workflows belong to a future phase. Full general-ledger/accounting navigation also belongs to a future phase; MVP finance navigation should expose only approved operational-finance workflows. The exact module and screen hierarchy must remain aligned with the approved requirements and screen specifications.
 
 Only authorized navigation options should be presented. Backend authorization remains authoritative.
 
@@ -85,7 +86,10 @@ The dashboard should provide a business overview through:
 - Sales and purchase trends where sufficient data is available.
 - Low-stock alerts.
 - Recent transactions.
+- Operational-finance summaries, such as receivables, payables, and payment activity, when available and authorized.
 - Quick actions relevant to the current user.
+
+Do not imply that formal general-ledger statements (such as trial balance, profit and loss, or balance sheet) are available in the MVP.
 
 Implement summary cards and alerts before introducing more complex visualizations.
 
@@ -139,6 +143,12 @@ Reuse common design tokens and shared components instead of creating unrelated s
 
 Buttons, form fields, dialogs, tables, alerts, and navigation elements should follow consistent visual rules.
 
+### 6.4 Frontend Component System
+
+The planned frontend uses React, TypeScript, Vite, and Ant Design. Prefer Ant Design components and shared NexusFlow wrappers/design tokens over introducing a second UI component library without an approved reason.
+
+Use React Router for navigation, TanStack Query for server-state fetching and caching, and Ant Design Forms for form state and validation presentation. These tools do not replace backend validation, authorization, or business rules. Use the shared Fetch API client for HTTP calls rather than creating inconsistent request patterns across modules.
+
 ## 7. Forms
 
 ### 7.1 Layout
@@ -152,7 +162,9 @@ Use responsive, section-based forms.
 
 ### 7.2 Transaction Forms
 
-Purchase Orders, Sales Invoices, and similar transactions should use dedicated line-item tables where appropriate.
+Purchase Orders, Sales Orders, Goods Issue/Delivery Notes, Sales Invoices, and similar transactions should use dedicated line-item tables where appropriate. Keep these as distinct business stages rather than treating an invoice as a substitute for fulfilment.
+
+For the MVP, sales screens should support the approved order, reservation, goods-issue/delivery, invoice, receipt/allocation, and return/refund workflows. Stock should decrease at goods issue/delivery, not merely because an invoice was created. Dedicated POS cashier screens, cash-register sessions, online-store channel screens, real payment-gateway screens, and offline synchronization are future-phase capabilities.
 
 Transaction screens should clearly distinguish:
 
@@ -329,6 +341,8 @@ Support controlled, consistent exports where appropriate.
 
 - CSV/Excel: data analysis and spreadsheet workflows.
 - PDF: structured reports suitable for fixed-format presentation.
+
+Large exports may be processed through background jobs; show a clear status and provide the result only when the job has completed successfully. Export availability and formats should follow the approved MVP scope.
 - Respect the filters and date ranges applied to the requested data.
 - Enforce the user's data and field permissions.
 - Preserve tenant isolation.
@@ -511,4 +525,10 @@ This document records the agreed UI/UX direction for NexusFlow. It does not mean
 
 Implementation will proceed in phases according to the approved requirements, screen specifications, architecture, and MVP priorities.
 
-Future enhancements, including full dark mode, additional languages, advanced dashboard customization, and offline POS, must be scheduled explicitly rather than assumed to be part of the initial MVP.
+The planned frontend stack is React + TypeScript + Vite + Ant Design, with React Router, TanStack Query, Ant Design Forms, a shared Fetch API client, and i18next/react-i18next for English and Arabic with RTL support. These are implementation decisions, not evidence that the UI has already been built.
+
+The initial MVP is online-first and includes the core ERP interface, inventory, purchasing, sales order/fulfilment/invoicing, and operational-finance workflows. Operational finance includes receivables/payables, receipts and payments with allocations, advances, refunds/returns, cash/bank operations, financial-period lifecycle controls, and operational reports.
+
+Dedicated POS, offline POS and synchronization, e-commerce storefront/channel integration, real payment-gateway integration, and full general-ledger accounting (including chart of accounts, double-entry journals, trial balance, profit-and-loss, and balance-sheet statements) are future-phase capabilities unless separately approved.
+
+Future enhancements, including full dark mode, advanced dashboard customization, and offline POS, must be scheduled explicitly rather than assumed to be part of the initial MVP.
